@@ -67,13 +67,16 @@
                               <Component id="mPlayButton" min="-2" pref="73" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace min="-2" pref="18" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="102" attributes="0">
-                      <Component id="mCameraView" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                          <Component id="mFPSLimitButton" max="32767" attributes="0"/>
+                          <Component id="mFPSLimitTextField" max="32767" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="mCameraView" pref="585" max="32767" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -88,6 +91,7 @@
                   <Component id="mPortTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mConnectButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mDisconnectButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="mFPSLimitTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -97,6 +101,7 @@
                   <Component id="mRotation3Button" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mVideoSizesCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="mPlayButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="mFPSLimitButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="mCameraView" pref="319" max="32767" attributes="0"/>
@@ -113,7 +118,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="mIpTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" value="192.168.2.6"/>
+        <Property name="text" type="java.lang.String" value="192.168.0.3"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
@@ -123,7 +128,7 @@
     </Component>
     <Component class="javax.swing.JTextField" name="mPortTextField">
       <Properties>
-        <Property name="text" type="java.lang.String" value="20099"/>
+        <Property name="text" type="java.lang.String" value="19999"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="mConnectButton">
@@ -211,6 +216,19 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mPlayButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="mFPSLimitTextField">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="66"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="mFPSLimitButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="FPS Limit"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="mFPSLimitButtonActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

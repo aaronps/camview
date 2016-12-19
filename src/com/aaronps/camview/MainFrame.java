@@ -19,6 +19,7 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
     private static final String VERSION = "0.4";
 
     private CameraThread mCameraThread;
+    private FrameRequester mFrameRequester;
     
     /**
      * Creates new form MainFrame
@@ -34,8 +35,7 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents()
-    {
+    private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
@@ -51,73 +51,63 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
         mRotation3Button = new javax.swing.JToggleButton();
         mVideoSizesCombo = new javax.swing.JComboBox<>();
         mPlayButton = new javax.swing.JButton();
+        mFPSLimitTextField = new javax.swing.JTextField();
+        mFPSLimitButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("HomeDroid Viewer " + VERSION);
 
         jLabel1.setText("IP");
 
-        mIpTextField.setText("192.168.2.6");
+        mIpTextField.setText("192.168.0.3");
 
         jLabel2.setText("Port");
 
-        mPortTextField.setText("20099");
+        mPortTextField.setText("19999");
 
         mConnectButton.setText("Connect");
-        mConnectButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mConnectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mConnectButtonActionPerformed(evt);
             }
         });
 
         mDisconnectButton.setText("Disconnect");
         mDisconnectButton.setEnabled(false);
-        mDisconnectButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mDisconnectButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mDisconnectButtonActionPerformed(evt);
             }
         });
 
         buttonGroup1.add(mRotation0Button);
         mRotation0Button.setText("0");
-        mRotation0Button.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mRotation0Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mRotation0ButtonActionPerformed(evt);
             }
         });
 
         buttonGroup1.add(mRotation1Button);
         mRotation1Button.setText("90");
-        mRotation1Button.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mRotation1Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mRotation1ButtonActionPerformed(evt);
             }
         });
 
         buttonGroup1.add(mRotation2Button);
         mRotation2Button.setText("180");
-        mRotation2Button.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mRotation2Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mRotation2ButtonActionPerformed(evt);
             }
         });
 
         buttonGroup1.add(mRotation3Button);
         mRotation3Button.setText("270");
-        mRotation3Button.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mRotation3Button.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mRotation3ButtonActionPerformed(evt);
             }
         });
@@ -126,11 +116,18 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
 
         mPlayButton.setText("Play");
         mPlayButton.setEnabled(false);
-        mPlayButton.addActionListener(new java.awt.event.ActionListener()
-        {
-            public void actionPerformed(java.awt.event.ActionEvent evt)
-            {
+        mPlayButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 mPlayButtonActionPerformed(evt);
+            }
+        });
+
+        mFPSLimitTextField.setText("66");
+
+        mFPSLimitButton.setText("FPS Limit");
+        mFPSLimitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mFPSLimitButtonActionPerformed(evt);
             }
         });
 
@@ -169,10 +166,13 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
                                 .addComponent(mVideoSizesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, 115, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(mPlayButton, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(18, 18, 18))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(mCameraView, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(mFPSLimitButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(mFPSLimitTextField))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(mCameraView, javax.swing.GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -184,7 +184,8 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
                     .addComponent(jLabel2)
                     .addComponent(mPortTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(mConnectButton)
-                    .addComponent(mDisconnectButton))
+                    .addComponent(mDisconnectButton)
+                    .addComponent(mFPSLimitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(mRotation0Button)
@@ -192,7 +193,8 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
                     .addComponent(mRotation2Button)
                     .addComponent(mRotation3Button)
                     .addComponent(mVideoSizesCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(mPlayButton))
+                    .addComponent(mPlayButton)
+                    .addComponent(mFPSLimitButton))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(mCameraView, javax.swing.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                 .addContainerGap())
@@ -209,6 +211,7 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
             mConnectButton.setEnabled(false);
             mDisconnectButton.setEnabled(true);
             mCameraThread.start();
+            mFrameRequester = new FrameRequester(mCameraThread);
         }
     }//GEN-LAST:event_mConnectButtonActionPerformed
 
@@ -230,6 +233,8 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
             mCameraView.reset();
             mCameraView.repaint();
             
+            mFrameRequester.shutdown();
+            mFrameRequester = null;
             try
             {
                 t.stop();
@@ -292,6 +297,12 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
         }
     }//GEN-LAST:event_mPlayButtonActionPerformed
 
+    private void mFPSLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mFPSLimitButtonActionPerformed
+        int limit = Math.max(0, Integer.parseInt(mFPSLimitTextField.getText()));
+        mFrameRequester.setMinDelay(limit);
+        
+    }//GEN-LAST:event_mFPSLimitButtonActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -335,6 +346,8 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
     private com.aaronps.camview.CameraView mCameraView;
     private javax.swing.JButton mConnectButton;
     private javax.swing.JButton mDisconnectButton;
+    private javax.swing.JButton mFPSLimitButton;
+    private javax.swing.JTextField mFPSLimitTextField;
     private javax.swing.JTextField mIpTextField;
     private javax.swing.JButton mPlayButton;
     private javax.swing.JTextField mPortTextField;
@@ -368,7 +381,7 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
     public void onVideoReady(CameraThread ct, CameraInfo info)
     {
         logger.info("Info received: " + info);
-        ct.request_pic();
+        mFrameRequester.request_pic();
     }
 
     @Override
@@ -389,7 +402,7 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
     @Override
     public void onFrameReceived(CameraThread ct, byte[] frame)
     {
+        mFrameRequester.request_pic();
         mCameraView.updatePic(frame);
-        ct.request_pic();
     }
 }
