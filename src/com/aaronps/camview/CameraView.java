@@ -23,6 +23,9 @@ public class CameraView extends JComponent
     private BufferedImage mImage;
     private double mRotation = 0;
     
+    private int[] mBuffer;
+    
+    
     public CameraView()
     {
         reset();
@@ -31,7 +34,10 @@ public class CameraView extends JComponent
     public final void reset()
     {
         setImageSize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        drawDefaultPattern(mImage);
+        // keep drawDefaultPattern here, setImageSize will only draw the patter
+        // if the size is different, it might be possible the size is the same
+        // so it was not drawn.
+        drawDefaultPattern();
     }
 
     @Override
@@ -73,7 +79,10 @@ public class CameraView extends JComponent
     
     final public void updatePic(final byte[] data)
     {
-        mImage.getRaster().setDataElements(0, 0, mImage.getWidth(), mImage.getHeight(), data);
+        final int width = mImage.getWidth();
+        final int height = mImage.getHeight();
+        nv21ToRGB(data, mBuffer, width, height);
+        mImage.getRaster().setDataElements(0, 0, width, height, mBuffer);
         repaint();
     }
     
@@ -93,27 +102,91 @@ public class CameraView extends JComponent
     {
         if ( mImage != null )
         {
-            final BufferedImage img = mImage;
-            if ( img.getWidth() == w && img.getHeight() == h )
+            if ( mImage.getWidth() == w && mImage.getHeight() == h )
             {
                 return;
             }
         }
         
-        final BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_BYTE_GRAY);
-        drawDefaultPattern(img);
-        mImage = img;
+        mImage = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
+        mBuffer = new int[w*h];
+        
+        drawDefaultPattern();
     }
     
-    final public void drawDefaultPattern(final BufferedImage img)
+    /**
+     * Draws a default pattern on the image.
+     * 
+     * Also useful to test the image type format, for TYPE_INT_RGB should be
+     * blue.
+     */
+    private void drawDefaultPattern()
     {
-        final int w = img.getWidth(), h = img.getHeight();
-        final byte[] data = new byte[w*h];
+        final int w = mImage.getWidth(), h = mImage.getHeight();
+        final int[] data = mBuffer;
         for ( int n = 0; n < h; n++ )
         {
-            Arrays.fill(data, n*w, (n+1)*w, (byte)(n&0xff));
+            Arrays.fill(data, n*w, (n+1)*w, n);
         }
-        img.getRaster().setDataElements(0, 0, w, h, data);
+        mImage.getRaster().setDataElements(0, 0, w, h, data);
+    }
+    
+    /**
+     * Converts an nv21 byte array to a int array as expected by
+     * BufferedImage.TYPE_INT_RGB.
+     * 
+     * @param src nv21 format source array
+     * @param dst destination array
+     * @param width image width
+     * @param height image height
+     */
+    private static void nv21ToRGB(final byte[] src,
+                                  final int[] dst,
+                                  final int width,
+                                  final int height) {
+        final int size = width*height;
+
+        for (int yi=0, uvi=size; yi < size; uvi+=2) {
+            final int v = (src[uvi  ]&0xff) - 128;
+            final int u = (src[uvi+1]&0xff) - 128;
+            
+            final int rval = (int)(1.402f*v);
+            final int gval = (int)(0.344f*u + 0.714f*v);
+            final int bval = (int)(1.772f*u);
+
+            dst[yi  ]       = y2rgb(src[yi  ]&0xff, rval, gval, bval);
+            dst[yi+1]       = y2rgb(src[yi+1]&0xff, rval, gval, bval);
+            dst[width+yi  ] = y2rgb(src[width+yi  ]&0xff, rval, gval, bval);
+            dst[width+yi+1] = y2rgb(src[width+yi+1]&0xff, rval, gval, bval);
+
+            yi += 2;
+            if ( (yi % width) == 0)
+                yi += width;
+        }
+    }
+    
+    /**
+     * Converts Y value (from yuv) to RGB using precomputed uv values.
+     * 
+     * @param y Y value from yuv
+     * @param rval precomputed value for red
+     * @param gval precomputed value for green
+     * @param bval precomputed value for blue
+     * @return integer value expected by BufferedImage.TYPE_INT_RGB
+     */
+    private static int y2rgb( final int y,
+                              final int rval,
+                              final int gval,
+                              final int bval ) {
+        int r = y + rval;
+        int g = y - gval;
+        int b = y + bval;
+        
+        r = r>255 ? 255 : r<0 ? 0 : r;
+        g = g>255 ? 255 : g<0 ? 0 : g;
+        b = b>255 ? 255 : b<0 ? 0 : b;
+        
+        return (r<<16) | (g<<8) | b;
     }
     
 }

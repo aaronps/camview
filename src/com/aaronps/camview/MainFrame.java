@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 public class MainFrame extends javax.swing.JFrame implements CameraThread.Listener
 {
     private static final Logger logger = Logger.getLogger("MainFrame");
-    private static final String VERSION = "0.4";
+    private static final String VERSION = "0.5";
 
     private CameraThread mCameraThread;
     private FrameRequester mFrameRequester;
