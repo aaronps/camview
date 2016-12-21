@@ -8,7 +8,12 @@ package com.aaronps.camview;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 
 /**
@@ -79,11 +84,19 @@ public class CameraView extends JComponent
     
     final public void updatePic(final byte[] data)
     {
-        final int width = mImage.getWidth();
-        final int height = mImage.getHeight();
-        nv21ToRGB(data, mBuffer, width, height);
-        mImage.getRaster().setDataElements(0, 0, width, height, mBuffer);
-        repaint();
+        try
+        {
+            BufferedImage bi = ImageIO.read(new ByteArrayInputStream(data)); // ignore size for now
+            if ( mImage != null ) {
+                
+            }
+            mImage = bi;
+            repaint();
+        }
+        catch (IOException ex)
+        {
+            Logger.getLogger(CameraView.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
     
     final public void setRotation(final int rot)

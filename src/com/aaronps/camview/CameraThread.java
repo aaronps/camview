@@ -5,7 +5,6 @@
  */
 package com.aaronps.camview;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,6 +151,7 @@ public class CameraThread implements Runnable
                 String line = inputLine.toString();
                 while ( ! line.isEmpty() )
                 {
+//                    logger.info("Got line: [" + line + "]");
                     final String[] parts = line.split(" ");
                     switch (parts[0])
                     {
