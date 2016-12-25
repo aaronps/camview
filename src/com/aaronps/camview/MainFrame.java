@@ -5,21 +5,31 @@
  */
 package com.aaronps.camview;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 
 /**
  *
  * @author krom
  */
-public class MainFrame extends javax.swing.JFrame implements CameraThread.Listener
+public class MainFrame extends javax.swing.JFrame implements RemoteCamera.Listener
 {
     private static final Logger logger = Logger.getLogger("MainFrame");
     private static final String VERSION = "0.5";
 
-    private CameraThread mCameraThread;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    private Future<?> mCameraFuture;
+    private RemoteCamera mRemoteCamera;
     private FrameRequester mFrameRequester;
+    private boolean mDidConnect = false;
+    
     
     /**
      * Creates new form MainFrame
@@ -205,43 +215,33 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
 
     private void mConnectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_mConnectButtonActionPerformed
     {//GEN-HEADEREND:event_mConnectButtonActionPerformed
-        if ( mCameraThread == null )
+        if ( mRemoteCamera == null )
         {
-            mCameraThread = new CameraThread(this, mIpTextField.getText(), Integer.parseInt(mPortTextField.getText()));
+            mDidConnect = false;
+            mRemoteCamera = new RemoteCamera(this, mIpTextField.getText(), Integer.parseInt(mPortTextField.getText()));
             mConnectButton.setEnabled(false);
             mDisconnectButton.setEnabled(true);
-            mCameraThread.start();
-            mFrameRequester = new FrameRequester(mCameraThread);
+            mCameraFuture = mExecutor.submit(mRemoteCamera);
+            mFrameRequester = new FrameRequester(mRemoteCamera);
         }
     }//GEN-LAST:event_mConnectButtonActionPerformed
 
     private void mDisconnectButtonActionPerformed(java.awt.event.ActionEvent evt)//GEN-FIRST:event_mDisconnectButtonActionPerformed
     {//GEN-HEADEREND:event_mDisconnectButtonActionPerformed
-        if ( mCameraThread != null )
+        // can only click once, if the program cannot continue then there are bugs
+        mDisconnectButton.setEnabled(false);
+        
+        if ( mRemoteCamera != null )
         {
-            CameraThread t = mCameraThread;
-            mCameraThread = null;
+            mCameraFuture.cancel(true); // this should cause disconenct... NOOOOO, if the camera wasn't connected!
+            mRemoteCamera = null;
             
-            mConnectButton.setEnabled(true);
-            mDisconnectButton.setEnabled(false);
-            
-            mVideoSizesCombo.removeAllItems();
-            mVideoSizesCombo.setEnabled(false);
-            mPlayButton.setEnabled(false);
-            mPlayButton.setText("Play");
-            
-            mCameraView.reset();
-            mCameraView.repaint();
-            
-            mFrameRequester.shutdown();
-            mFrameRequester = null;
-            try
+            if ( !mDidConnect )
             {
-                t.stop();
-            }
-            catch (InterruptedException ex)
-            {
-                Logger.getLogger(MainFrame.class.getName()).log(Level.SEVERE, null, ex);
+                // this is needed to reenable the connect button in case the
+                // camera did never connect, because there won't be a disconnect
+                // event.
+                mConnectButton.setEnabled(true);
             }
             
         }
@@ -287,26 +287,46 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
             mCameraView.setImageSize(w, h);
             mCameraView.repaint();
             
-            mCameraThread.request_beginvideo(selectedSize);
+            try
+            {
+                mRemoteCamera.request_beginvideo(selectedSize);
+            }
+            catch (IOException ex)
+            {
+                logger.log(Level.SEVERE, "Couldn't request begin video... what to do now?", ex);
+            }
         }
         else
         {
             mVideoSizesCombo.setEnabled(true);
             mPlayButton.setText("Play");
-            mCameraThread.request_stopvideo();
+            try
+            {
+                mRemoteCamera.request_stopvideo();
+            }
+            catch (IOException ex)
+            {
+                logger.log(Level.SEVERE, "Couldn't stop video... now what?", ex);
+            }
         }
     }//GEN-LAST:event_mPlayButtonActionPerformed
 
     private void mFPSLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mFPSLimitButtonActionPerformed
-        int limit = Math.max(0, Integer.parseInt(mFPSLimitTextField.getText()));
-        mFrameRequester.setMinDelay(limit);
-        
+        if ( mFrameRequester != null )
+        {
+            int limit = Math.max(0, Integer.parseInt(mFPSLimitTextField.getText()));
+            mFrameRequester.setMinDelay(limit);
+        }
     }//GEN-LAST:event_mFPSLimitButtonActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        
+//        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS %4$s %3$s | %5$s%n");
+//        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS | %4$s %2$s: %5$s %6$s%n");
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS | %4$s %3$s: %5$s %6$s%n");
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -359,48 +379,72 @@ public class MainFrame extends javax.swing.JFrame implements CameraThread.Listen
     // End of variables declaration//GEN-END:variables
 
     @Override
-    public void onConnected(CameraThread ct)
+    public void onConnected(RemoteCamera rc)
     {
-        logger.info("Connected!!!!");
-        ct.request_sizelist();
+        logger.info("Connected");
+        mDidConnect = true;
+        try
+        {
+            rc.request_sizelist();
+            mFrameRequester.resume();
+        }
+        catch (IOException ex)
+        {
+            logger.log(Level.SEVERE, "Just connected but cannot request things... then?", ex);
+        }
     }
 
     @Override
-    public void onDisconnected(CameraThread ct)
+    public void onDisconnected(RemoteCamera rc)
     {
         logger.info("Disconnected");
-        mVideoSizesCombo.removeAllItems();
-        mVideoSizesCombo.setEnabled(false);
-        mPlayButton.setEnabled(false);
-        mPlayButton.setText("Play");
-        mCameraView.reset();
-        mCameraView.repaint();
+        mDidConnect = false;
+        
+        SwingUtilities.invokeLater(() -> {
+            if ( mRemoteCamera == null )
+            {
+                mDisconnectButton.setEnabled(false);
+                mConnectButton.setEnabled(true);
+            }
+            
+            mVideoSizesCombo.removeAllItems();
+            mVideoSizesCombo.setEnabled(false);
+            mPlayButton.setEnabled(false);
+            mPlayButton.setText("Play");
+            
+            mCameraView.reset();
+            mCameraView.repaint();
+        });
+        
+        mFrameRequester.pause();
     }
 
     @Override
-    public void onVideoReady(CameraThread ct, CameraInfo info)
+    public void onVideoReady(RemoteCamera rc, CameraInfo info)
     {
         logger.info("Info received: " + info);
         mFrameRequester.request_pic();
     }
 
     @Override
-    public void onSizeListReceived(CameraThread ct, String[] sizes)
+    public void onSizeListReceived(RemoteCamera rc, String[] sizes)
     {
-        logger.info("Sizes received: " + Arrays.toString(sizes));
-        mVideoSizesCombo.removeAllItems();
-        for ( String s: sizes )
-        {
-            mVideoSizesCombo.addItem(s);
-        }
-        
-        mVideoSizesCombo.setEnabled(true);
-        mVideoSizesCombo.setSelectedIndex(0);
-        mPlayButton.setEnabled(true);
+        logger.log(Level.INFO, "Sizes received: {0}", Arrays.toString(sizes));
+        SwingUtilities.invokeLater(() -> {
+            mVideoSizesCombo.removeAllItems();
+            for ( String s: sizes )
+            {
+                mVideoSizesCombo.addItem(s);
+            }
+
+            mVideoSizesCombo.setEnabled(true);
+            mVideoSizesCombo.setSelectedIndex(0);
+            mPlayButton.setEnabled(true);
+        });
     }
 
     @Override
-    public void onFrameReceived(CameraThread ct, byte[] frame)
+    public void onFrameReceived(RemoteCamera rc, ByteBuffer frame)
     {
         mFrameRequester.request_pic();
         mCameraView.updatePic(frame);
