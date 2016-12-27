@@ -22,7 +22,7 @@ import javax.swing.SwingUtilities;
 public class MainFrame extends javax.swing.JFrame implements RemoteCamera.Listener
 {
     private static final Logger logger = Logger.getLogger("MainFrame");
-    private static final String VERSION = "0.5";
+    private static final String VERSION = "0.6";
 
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
     private Future<?> mCameraFuture;
@@ -65,7 +65,7 @@ public class MainFrame extends javax.swing.JFrame implements RemoteCamera.Listen
         mFPSLimitButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("HomeDroid Viewer " + VERSION);
+        setTitle("Aremocam Viewer " + VERSION);
 
         jLabel1.setText("IP");
 
