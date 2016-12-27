@@ -86,10 +86,6 @@ public class CameraView extends JComponent {
                     new ByteArrayInputStream(byteBuffer.array(),
                                              byteBuffer.position(),
                                              byteBuffer.remaining()));
-//            if (mImage != null)
-//            {
-//
-//            }
             mImage = bi;
             repaint();
         }
